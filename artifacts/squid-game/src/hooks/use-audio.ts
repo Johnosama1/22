@@ -1,6 +1,5 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useMemo } from 'react';
 
-// Using Web Audio API for synthetic, zero-dependency sound effects
 export function useAudio() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const droneOscRef = useRef<OscillatorNode | null>(null);
@@ -142,5 +141,5 @@ export function useAudio() {
     };
   }, [stopDrone]);
 
-  return { initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin };
+  return useMemo(() => ({ initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin }), [initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin]);
 }
