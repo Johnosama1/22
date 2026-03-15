@@ -1,0 +1,13 @@
+packages:
+  "framer-motion": "For cinematic screen transitions, typewriter effects, and smooth UI animations"
+  "lucide-react": "For icons in UI buttons"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes"
+
+images: []
+
+notes:
+  - Game is entirely client-side. No backend API integration required.
+  - Background image `squid-game-bg.png` must be in the `public` directory.
+  - Using Web Audio API for synthetic sound effects (drone, gunshot, win).
+  - All character art is rendered via CSS and HTML elements.

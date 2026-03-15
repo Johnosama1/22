@@ -91,6 +91,26 @@ Generated Zod schemas from the OpenAPI spec (e.g. `HealthCheckResponse`). Used b
 
 Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHealthCheck`, `healthCheck`).
 
+### `artifacts/squid-game` (`@workspace/squid-game`)
+
+Squid Game-inspired browser game built with React + Vite. Entirely client-side — no backend/API calls.
+
+- **Game**: Red Light, Green Light mini-game with AI opponents
+- **Stack**: React, Vite, Framer Motion, Tailwind CSS, Web Audio API
+- **Theme**: Dark cinematic Squid Game aesthetic (deep blacks, teal/pink neon accents)
+- **Game States**: LANDING → ANNOUNCING → PLAYING → WON/LOST → REWARD/NEXT_ROUND
+- **Key files**:
+  - `src/pages/Home.tsx` — Main game view with arena rendering
+  - `src/pages/GameScreens.tsx` — Landing, announcement, win/lose/reward screens
+  - `src/hooks/use-game-engine.ts` — Core game state machine, AI movement, light switching
+  - `src/hooks/use-audio.ts` — Web Audio API sound effects (drone, gunshot, win fanfare)
+  - `src/components/Character.tsx` — Player/AI character CSS figures
+  - `src/components/Doll.tsx` — Giant doll that rotates on red light
+  - `src/components/UIComponents.tsx` — Neon buttons, Squid shapes, landing character
+  - `src/index.css` — Squid Game color theme, glow effects, CRT overlay
+- **Controls**: Click MOVE button or press SPACE/ArrowUp during green light
+- **Background image**: `public/squid-game-bg.png` (user-provided)
+
 ### `scripts` (`@workspace/scripts`)
 
 Utility scripts package. Each script is a `.ts` file in `src/` with a corresponding npm script in `package.json`. Run scripts via `pnpm --filter @workspace/scripts run <script>`. Scripts can import any workspace package (e.g., `@workspace/db`) by adding it as a dependency in `scripts/package.json`.
