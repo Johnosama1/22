@@ -43,6 +43,37 @@ export function LandingScreen({ startGame }: ScreenProps) {
   );
 }
 
+function TypewriterText({ text, className }: { text: string; className?: string }) {
+  return (
+    <span className={className}>
+      {text.split('').map((char, i) => (
+        <motion.span
+          key={i}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: i * 0.05, duration: 0.05 }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </span>
+  );
+}
+
+function MaskedGuard() {
+  return (
+    <div className="relative flex flex-col items-center">
+      <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-b from-red-700 to-red-900 flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.5)] border-2 border-red-600">
+        <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-black/80 flex items-center justify-center">
+          <div className="w-8 h-8 md:w-12 md:h-12 border-3 border-red-500 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.8)]" />
+        </div>
+      </div>
+      <div className="w-24 h-16 md:w-32 md:h-20 bg-gradient-to-b from-red-800 to-red-900 rounded-b-lg -mt-2 shadow-xl" />
+      <div className="absolute -bottom-2 w-16 h-4 bg-black/30 rounded-full blur-sm" />
+    </div>
+  );
+}
+
 export function AnnouncementScreen({ count }: { count: number }) {
   return (
     <motion.div 
@@ -51,19 +82,34 @@ export function AnnouncementScreen({ count }: { count: number }) {
       exit={{ opacity: 0 }}
       className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black crt-overlay"
     >
-      <div className="max-w-3xl px-8 text-center space-y-12">
-        <SquidShapes />
-        
-        <motion.h2 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="text-3xl md:text-5xl font-mono text-white leading-relaxed"
+      <div className="max-w-3xl px-8 text-center space-y-10">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6 }}
         >
-          The first game is <br/>
-          <span className="text-squid-teal font-display font-black tracking-widest text-glow-teal text-4xl md:text-6xl uppercase mt-4 block">
-            Red Light, Green Light
-          </span>
-        </motion.h2>
+          <MaskedGuard />
+        </motion.div>
+        
+        <div className="space-y-4">
+          <motion.h2 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-2xl md:text-4xl font-mono text-white leading-relaxed"
+          >
+            <TypewriterText text="The first game is..." />
+          </motion.h2>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 1.5 }}
+          >
+            <span className="text-squid-teal font-display font-black tracking-widest text-glow-teal text-3xl md:text-5xl uppercase block">
+              Red Light, Green Light
+            </span>
+          </motion.div>
+        </div>
 
         <motion.div 
           key={count}

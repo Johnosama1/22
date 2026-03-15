@@ -50,21 +50,19 @@ export function useGameEngine() {
     setGameState('ANNOUNCING');
   }, [audio]);
 
-  // Announcement Sequence
   useEffect(() => {
-    if (gameState === 'ANNOUNCING') {
-      const timer = setInterval(() => {
-        setAnnouncementCount((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setGameState('PLAYING');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
+    if (gameState !== 'ANNOUNCING') return;
+    const timer = setInterval(() => {
+      setAnnouncementCount((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setGameState('PLAYING');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
   }, [gameState]);
 
   // Handle Game Loop (AI Movement & Global Timers)
@@ -82,16 +80,14 @@ export function useGameEngine() {
         const newPlayers = currentPlayers.map(p => {
           if (p.status !== 'ALIVE' || p.isUser) return p;
 
-          let newStatus = p.status;
+          let newStatus: PlayerData['status'] = p.status;
           let newProgress = p.progress;
 
           if (lightState === 'GREEN') {
-            // AI moves forward
             newProgress = Math.min(TOTAL_DISTANCE, p.progress + p.speed);
             if (newProgress >= TOTAL_DISTANCE) newStatus = 'FINISHED';
             anyChanges = true;
           } else if (lightState === 'RED') {
-            // AI has a chance to fail on RED
             if (Math.random() > p.discipline) {
               newStatus = 'ELIMINATED';
               audio.playShot();
@@ -127,7 +123,9 @@ export function useGameEngine() {
     const switchLight = () => {
       setLightState(prev => {
         const next = prev === 'GREEN' ? 'RED' : 'GREEN';
-        // Red lights are usually shorter (1-3s), Green lights longer (3-5s)
+        if (next === 'RED') {
+          audio.playDollTurn();
+        }
         const duration = next === 'RED' ? 1000 + Math.random() * 2000 : 3000 + Math.random() * 3000;
         lightTimerRef.current = setTimeout(switchLight, duration);
         return next;

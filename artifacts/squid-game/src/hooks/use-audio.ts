@@ -75,6 +75,36 @@ export function useAudio() {
     osc.stop(ctx.currentTime + 0.2);
   }, []);
 
+  const playDollTurn = useCallback(() => {
+    if (!audioCtxRef.current) return;
+    const ctx = audioCtxRef.current;
+
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(800, ctx.currentTime);
+    osc1.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
+
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(1200, ctx.currentTime);
+    osc2.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.4);
+
+    gain.gain.setValueAtTime(0.4, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.5);
+    osc2.start(ctx.currentTime);
+    osc2.stop(ctx.currentTime + 0.5);
+  }, []);
+
   const playWin = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
@@ -111,5 +141,5 @@ export function useAudio() {
     };
   }, [stopDrone]);
 
-  return { initAudio, playDrone, stopDrone, playShot, playWin };
+  return { initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin };
 }
