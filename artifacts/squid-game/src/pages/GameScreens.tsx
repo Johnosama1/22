@@ -1,47 +1,6 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { GameState } from '@/hooks/use-game-engine';
+import { motion } from 'framer-motion';
 import { NeonButton, SquidShapes, LandingCharacter } from '@/components/UIComponents';
-
-interface ScreenProps {
-  startGame: () => void;
-  setGameState: (state: GameState) => void;
-}
-
-export function LandingScreen({ startGame }: ScreenProps) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0, transition: { duration: 1 } }}
-      className="absolute inset-0 z-50 flex flex-col items-center justify-center crt-overlay"
-    >
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
-      
-      <div className="z-10 flex flex-col items-center gap-12 text-center px-4 max-w-2xl">
-        <SquidShapes />
-        
-        <div className="space-y-4">
-          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none">
-            Welcome to the <br/>
-            <span className="text-squid-pink text-glow-pink">Games</span>
-          </h1>
-          <p className="text-lg md:text-xl text-zinc-400 font-mono">
-            Player 456, your debt is overwhelming.
-            <br />Survive, and win the ultimate prize.
-          </p>
-        </div>
-
-        <div className="py-4">
-          <LandingCharacter />
-        </div>
-
-        <NeonButton onClick={startGame} variant="pink" className="mt-4 scale-110">
-          PLAY
-        </NeonButton>
-      </div>
-    </motion.div>
-  );
-}
+import { TOTAL_ROUNDS } from '@/hooks/use-game-engine';
 
 function TypewriterText({ text, className }: { text: string; className?: string }) {
   return (
@@ -74,11 +33,48 @@ function MaskedGuard() {
   );
 }
 
-export function AnnouncementScreen({ count }: { count: number }) {
+export function LandingScreen({ startGame }: { startGame: () => void; returnToMenu: () => void }) {
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 1 } }}
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center crt-overlay"
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-0" />
+      <div className="z-10 flex flex-col items-center gap-12 text-center px-4 max-w-2xl">
+        <SquidShapes />
+        <div className="space-y-4">
+          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none">
+            Welcome to the <br/>
+            <span className="text-squid-pink text-glow-pink">Games</span>
+          </h1>
+          <p className="text-lg md:text-xl text-zinc-400 font-mono">
+            Player 456, your debt is overwhelming.
+            <br />Survive, and win the ultimate prize.
+          </p>
+        </div>
+        <div className="py-4">
+          <LandingCharacter />
+        </div>
+        <NeonButton onClick={startGame} variant="pink" className="mt-4 scale-110">
+          PLAY
+        </NeonButton>
+      </div>
+    </motion.div>
+  );
+}
+
+export function AnnouncementScreen({ count, roundNumber, roundName, announcementText }: {
+  count: number;
+  roundNumber: number;
+  roundName: string;
+  announcementText: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black crt-overlay"
     >
@@ -90,15 +86,23 @@ export function AnnouncementScreen({ count }: { count: number }) {
         >
           <MaskedGuard />
         </motion.div>
-        
-        <div className="space-y-4">
-          <motion.h2 
+
+        <div className="space-y-2">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-zinc-500 font-mono text-sm uppercase tracking-widest"
+          >
+            Round {roundNumber} of {TOTAL_ROUNDS}
+          </motion.div>
+          <motion.h2
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
             className="text-2xl md:text-4xl font-mono text-white leading-relaxed"
           >
-            <TypewriterText text="The first game is..." />
+            <TypewriterText text={announcementText} />
           </motion.h2>
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -106,12 +110,12 @@ export function AnnouncementScreen({ count }: { count: number }) {
             transition={{ delay: 1.5 }}
           >
             <span className="text-squid-teal font-display font-black tracking-widest text-glow-teal text-3xl md:text-5xl uppercase block">
-              Red Light, Green Light
+              {roundName}
             </span>
           </motion.div>
         </div>
 
-        <motion.div 
+        <motion.div
           key={count}
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -126,11 +130,15 @@ export function AnnouncementScreen({ count }: { count: number }) {
   );
 }
 
-export function LoseScreen({ startGame }: ScreenProps) {
+export function LoseScreen({ startGame, roundName }: {
+  startGame: () => void;
+  returnToMenu: () => void;
+  roundName: string;
+}) {
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 1.1 }} 
-      animate={{ opacity: 1, scale: 1 }} 
+    <motion.div
+      initial={{ opacity: 0, scale: 1.1 }}
+      animate={{ opacity: 1, scale: 1 }}
       className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 crt-overlay"
     >
       <div className="text-center space-y-8 px-6">
@@ -138,7 +146,7 @@ export function LoseScreen({ startGame }: ScreenProps) {
           ELIMINATED
         </h2>
         <p className="text-xl md:text-2xl text-zinc-400 font-mono">
-          You lost the game.<br/>All your money is gone.
+          You failed {roundName}.<br/>All your money is gone.
         </p>
         <div className="pt-8">
           <NeonButton onClick={startGame} variant="pink">
@@ -150,11 +158,26 @@ export function LoseScreen({ startGame }: ScreenProps) {
   );
 }
 
-export function WinScreen({ startGame, setGameState }: ScreenProps) {
+const ROUND_PRIZES: Record<number, string> = {
+  1: '₩100 Million',
+  2: '₩500 Million',
+  3: '₩2 Billion',
+  4: '₩10 Billion',
+  5: '₩25 Billion',
+  6: '₩45.6 Billion',
+};
+
+export function WinScreen({ currentRound, roundName, onTakeReward, onContinue }: {
+  currentRound: number;
+  roundName: string;
+  onTakeReward: () => void;
+  onContinue: () => void;
+}) {
+  const isFinalRound = currentRound >= TOTAL_ROUNDS;
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 50 }} 
-      animate={{ opacity: 1, y: 0 }} 
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
       className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-squid-green/95 backdrop-blur-md crt-overlay"
     >
       <div className="text-center space-y-12 max-w-2xl px-6">
@@ -164,85 +187,141 @@ export function WinScreen({ startGame, setGameState }: ScreenProps) {
             Congratulations
           </h2>
           <p className="text-xl md:text-2xl text-emerald-200 font-mono">
-            You survived the first game.
+            You survived {roundName}!
+          </p>
+          <p className="text-lg text-yellow-300 font-mono">
+            Prize so far: {ROUND_PRIZES[currentRound]}
           </p>
         </div>
 
         <div className="bg-black/40 p-8 rounded-xl border border-white/10 space-y-8">
-          <p className="text-lg md:text-xl text-white">
-            Do you want to take the money and leave, or continue playing for a bigger reward?
-          </p>
-          
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <NeonButton onClick={() => setGameState('REWARD')} variant="pink">
-              YES — Take money
-            </NeonButton>
-            <NeonButton 
-              onClick={() => setGameState('NEXT_ROUND')} 
-              variant="teal"
-            >
-              NO — Continue
-            </NeonButton>
-          </div>
+          {isFinalRound ? (
+            <>
+              <p className="text-lg md:text-xl text-white">
+                You have conquered all the games!
+              </p>
+              <NeonButton onClick={onContinue} variant="teal">
+                Claim the Grand Prize
+              </NeonButton>
+            </>
+          ) : (
+            <>
+              <p className="text-lg md:text-xl text-white">
+                Do you want to take {ROUND_PRIZES[currentRound]} and leave, or continue playing for a bigger reward?
+              </p>
+              <div className="flex flex-col md:flex-row gap-4 justify-center">
+                <NeonButton onClick={onTakeReward} variant="pink">
+                  YES — Take money
+                </NeonButton>
+                <NeonButton onClick={onContinue} variant="teal">
+                  NO — Continue
+                </NeonButton>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </motion.div>
   );
 }
 
-export function NextRoundScreen({ setGameState }: { setGameState: (s: GameState) => void }) {
+export function RewardScreen({ currentRound, returnToMenu }: {
+  currentRound: number;
+  returnToMenu: () => void;
+}) {
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 crt-overlay"
-    >
-      <div className="text-center space-y-12 max-w-2xl px-6">
-        <SquidShapes />
-        <div className="space-y-6">
-          <h2 className="text-4xl md:text-6xl font-black text-white tracking-widest uppercase drop-shadow-xl text-glow-teal">
-            Next Round<br/>Coming Soon...
-          </h2>
-          <p className="text-xl md:text-2xl text-zinc-400 font-mono">
-            The games will continue. Stay alert.
-          </p>
-        </div>
-        <div className="pt-8">
-          <NeonButton onClick={() => setGameState('LANDING')} variant="pink">
-            Return to Menu
-          </NeonButton>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-export function RewardScreen({ setGameState }: { setGameState: (s: GameState) => void }) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black crt-overlay"
     >
       <div className="text-center space-y-8">
-        <motion.div 
+        <motion.div
           animate={{ rotateY: 360 }}
           transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           className="w-32 h-32 mx-auto bg-yellow-400 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(250,204,21,0.5)] border-4 border-yellow-600"
         >
           <span className="text-5xl font-bold text-yellow-700">₩</span>
         </motion.div>
-        
+
         <h2 className="text-4xl md:text-6xl font-black text-yellow-400 tracking-widest">
-          45.6 BILLION WON
+          {ROUND_PRIZES[currentRound]}
         </h2>
         <p className="text-xl text-zinc-400 font-mono">Transferred to your account.</p>
-        
+        <p className="text-sm text-zinc-600 font-mono">You chose to leave after Round {currentRound}.</p>
+
         <div className="pt-8">
-          <NeonButton onClick={() => setGameState('LANDING')} variant="pink">
+          <NeonButton onClick={returnToMenu} variant="pink">
             Return Home
           </NeonButton>
         </div>
+      </div>
+    </motion.div>
+  );
+}
+
+export function GrandVictoryScreen({ returnToMenu }: { returnToMenu: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black crt-overlay"
+    >
+      <div className="text-center space-y-8 max-w-2xl px-6">
+        <SquidShapes />
+
+        <motion.div
+          animate={{ rotateY: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+          className="w-40 h-40 mx-auto bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-[0_0_80px_rgba(250,204,21,0.6)] border-4 border-yellow-600"
+        >
+          <span className="text-6xl font-bold text-yellow-800">₩</span>
+        </motion.div>
+
+        <div className="space-y-4">
+          <h2 className="text-5xl md:text-7xl font-black text-yellow-400 tracking-widest drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]">
+            45.6 BILLION WON
+          </h2>
+          <p className="text-2xl text-squid-teal font-mono text-glow-teal">
+            GRAND CHAMPION
+          </p>
+          <p className="text-lg text-zinc-400 font-mono">
+            Player 456 — You survived all 6 games.
+          </p>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1 }}
+          className="space-y-4"
+        >
+          <div className="grid grid-cols-3 gap-2 text-xs font-mono text-zinc-500">
+            <div className="bg-black/40 rounded p-2 border border-white/5">
+              <span className="text-squid-teal block">Round 1</span>Red Light, Green Light
+            </div>
+            <div className="bg-black/40 rounded p-2 border border-white/5">
+              <span className="text-squid-teal block">Round 2</span>Dalgona Candy
+            </div>
+            <div className="bg-black/40 rounded p-2 border border-white/5">
+              <span className="text-squid-teal block">Round 3</span>Tug of War
+            </div>
+            <div className="bg-black/40 rounded p-2 border border-white/5">
+              <span className="text-squid-teal block">Round 4</span>Marbles
+            </div>
+            <div className="bg-black/40 rounded p-2 border border-white/5">
+              <span className="text-squid-teal block">Round 5</span>Glass Bridge
+            </div>
+            <div className="bg-black/40 rounded p-2 border border-white/5">
+              <span className="text-squid-teal block">Round 6</span>Squid Game
+            </div>
+          </div>
+          <div className="pt-4">
+            <NeonButton onClick={returnToMenu} variant="pink">
+              Play Again
+            </NeonButton>
+          </div>
+        </motion.div>
       </div>
     </motion.div>
   );

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { PlayerData } from '@/hooks/use-game-engine';
+import { PlayerData } from '@/games/RedLightGreenLight';
 import { cn } from '@/lib/utils';
 
 interface CharacterProps {

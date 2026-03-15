@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { LightState } from '@/hooks/use-game-engine';
+import { LightState } from '@/games/RedLightGreenLight';
 
 interface DollProps {
   lightState: LightState;

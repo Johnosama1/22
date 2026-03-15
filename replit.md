@@ -95,20 +95,34 @@ Generated React Query hooks and fetch client from the OpenAPI spec (e.g. `useHea
 
 Squid Game-inspired browser game built with React + Vite. Entirely client-side — no backend/API calls.
 
-- **Game**: Red Light, Green Light mini-game with AI opponents
+- **Game**: 6-round Squid Game tournament with multiple mini-games
 - **Stack**: React, Vite, Framer Motion, Tailwind CSS, Web Audio API
 - **Theme**: Dark cinematic Squid Game aesthetic (deep blacks, teal/pink neon accents)
-- **Game States**: LANDING → ANNOUNCING → PLAYING → WON/LOST → REWARD/NEXT_ROUND
+- **Rounds**:
+  1. Red Light, Green Light — Click MOVE during green light, freeze on red
+  2. Dalgona Candy — Trace shape outline on honeycomb candy with a needle
+  3. Tug of War — Mash PULL button to pull the rope against enemy team
+  4. Marbles — Odd/even guessing game, win all marbles from opponent
+  5. Glass Bridge — Choose left/right panels across 18 steps, avoid weak glass
+  6. Squid Game Final — Turn-based attacker vs defender (Move/Dodge/Attack)
+- **Game Phases**: LANDING → ANNOUNCING → PLAYING → WON/LOST → REWARD/GRAND_VICTORY
+- **Architecture**: Round manager (`use-game-engine.ts`) handles round lifecycle; each game is a self-contained component in `src/games/`
 - **Key files**:
-  - `src/pages/Home.tsx` — Main game view with arena rendering
-  - `src/pages/GameScreens.tsx` — Landing, announcement, win/lose/reward screens
-  - `src/hooks/use-game-engine.ts` — Core game state machine, AI movement, light switching
+  - `src/pages/Home.tsx` — Main game container, renders current round's game component
+  - `src/pages/GameScreens.tsx` — Landing, announcement, win/lose/reward/grand victory screens
+  - `src/hooks/use-game-engine.ts` — Round manager (currentRound, gamePhase, transitions)
   - `src/hooks/use-audio.ts` — Web Audio API sound effects (drone, gunshot, win fanfare)
-  - `src/components/Character.tsx` — Player/AI character CSS figures
-  - `src/components/Doll.tsx` — Giant doll that rotates on red light
+  - `src/games/RedLightGreenLight.tsx` — Round 1 game
+  - `src/games/DalgonaCandy.tsx` — Round 2 game
+  - `src/games/TugOfWar.tsx` — Round 3 game
+  - `src/games/Marbles.tsx` — Round 4 game
+  - `src/games/GlassBridge.tsx` — Round 5 game
+  - `src/games/SquidGameFinal.tsx` — Round 6 game
+  - `src/components/Character.tsx` — Player/AI character CSS figures (Round 1)
+  - `src/components/Doll.tsx` — Giant doll that rotates on red light (Round 1)
   - `src/components/UIComponents.tsx` — Neon buttons, Squid shapes, landing character
   - `src/index.css` — Squid Game color theme, glow effects, CRT overlay
-- **Controls**: Click MOVE button or press SPACE/ArrowUp during green light
+- **Controls**: Vary per game (MOVE/SPACE for R1, pointer drag for R2, PULL/SPACE for R3, buttons for R4-R6)
 - **Background image**: `public/squid-game-bg.png` (user-provided)
 
 ### `scripts` (`@workspace/scripts`)
