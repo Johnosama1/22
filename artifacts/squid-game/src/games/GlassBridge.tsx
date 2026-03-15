@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { playShot: () => void; playGlassShatter: () => void; playGlassStep: () => void; playTensionDrone: () => void; stopDrone: () => void; initAudio: () => void };
+  audio: { playGlassShatter: () => void; playGlassStep: () => void; playTensionDrone: () => void; stopDrone: () => void; initAudio: () => void };
 }
 
 const BRIDGE_LENGTH = 18;
@@ -24,11 +24,14 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
   const [timeLeft, setTimeLeft] = useState(60);
   const [showResult, setShowResult] = useState<'win' | 'lose' | null>(null);
   const [aiPhase, setAiPhase] = useState(true);
-  const [aiProgress, setAiProgress] = useState(0);
   const [aiMessage, setAiMessage] = useState('');
   const doneRef = useRef(false);
 
   useEffect(() => {
+    let cancelled = false;
+    const timerIds: ReturnType<typeof setTimeout>[] = [];
+    const intervalIds: ReturnType<typeof setInterval>[] = [];
+
     const rows: BridgeRow[] = Array.from({ length: BRIDGE_LENGTH }).map(() => ({
       safeSide: Math.random() < 0.5 ? 'left' : 'right',
       leftState: 'unknown',
@@ -39,6 +42,7 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
     let step = 0;
     let aiIdx = 0;
     const runAI = () => {
+      if (cancelled) return;
       if (aiIdx >= AI_PLAYERS) {
         setAiPhase(false);
         setAiMessage('');
@@ -46,12 +50,14 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
       }
       setAiMessage(`Player ${100 + aiIdx} is attempting the bridge...`);
       const aiInterval = setInterval(() => {
+        if (cancelled) { clearInterval(aiInterval); return; }
         if (step >= BRIDGE_LENGTH) {
           clearInterval(aiInterval);
           setAiMessage(`Player ${100 + aiIdx} made it across!`);
           aiIdx++;
           step = 0;
-          setTimeout(runAI, 1000);
+          const t = setTimeout(runAI, 1000);
+          timerIds.push(t);
           return;
         }
         const row = rows[step];
@@ -60,7 +66,6 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
           if (row.safeSide === 'left') row.leftState = 'revealed-safe';
           else row.rightState = 'revealed-safe';
           step++;
-          setAiProgress(step);
           setBridge([...rows]);
         } else {
           if (row.safeSide === 'left') row.rightState = 'broken';
@@ -70,11 +75,20 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
           clearInterval(aiInterval);
           aiIdx++;
           step = 0;
-          setTimeout(runAI, 1200);
+          const t = setTimeout(runAI, 1200);
+          timerIds.push(t);
         }
       }, 600);
+      intervalIds.push(aiInterval);
     };
-    setTimeout(runAI, 1000);
+    const initTimer = setTimeout(runAI, 1000);
+    timerIds.push(initTimer);
+
+    return () => {
+      cancelled = true;
+      timerIds.forEach(clearTimeout);
+      intervalIds.forEach(clearInterval);
+    };
   }, []);
 
   useEffect(() => {
