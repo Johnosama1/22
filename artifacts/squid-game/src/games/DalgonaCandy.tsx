@@ -5,6 +5,20 @@ type Shape = 'circle' | 'triangle' | 'star' | 'umbrella';
 
 const SHAPES: Shape[] = ['circle', 'triangle', 'star', 'umbrella'];
 
+const SHAPE_DIFFICULTY: Record<Shape, number> = {
+  circle: 0.75,
+  triangle: 0.65,
+  star: 0.45,
+  umbrella: 0.35,
+};
+
+interface AIPlayer {
+  id: number;
+  shape: Shape;
+  status: 'cutting' | 'success' | 'failed';
+  progress: number;
+}
+
 function getShapePath(shape: Shape, cx: number, cy: number, size: number): { x: number; y: number }[] {
   const points: { x: number; y: number }[] = [];
   const steps = 60;
@@ -84,10 +98,10 @@ function getShapeSVGPath(shape: Shape, cx: number, cy: number, size: number): st
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { initAudio: () => void };
+  audio: { playCrack: () => void; initAudio: () => void };
 }
 
-export function DalgonaCandy({ onWin, onLose }: Props) {
+export function DalgonaCandy({ onWin, onLose, audio }: Props) {
   const [shape] = useState<Shape>(() => SHAPES[Math.floor(Math.random() * SHAPES.length)]);
   const [traceProgress, setTraceProgress] = useState(0);
   const [crackLevel, setCrackLevel] = useState(0);
@@ -95,10 +109,22 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
   const [isTracing, setIsTracing] = useState(false);
   const [needlePos, setNeedlePos] = useState({ x: 0, y: 0 });
   const [showResult, setShowResult] = useState<'win' | 'lose' | null>(null);
+  const [aiPlayers, setAiPlayers] = useState<AIPlayer[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
   const doneRef = useRef(false);
   const pathPointsRef = useRef(getShapePath(shape, 200, 200, 80));
   const currentSegmentRef = useRef(0);
+  const lastPosRef = useRef<{ x: number; y: number; time: number } | null>(null);
+
+  useEffect(() => {
+    const players: AIPlayer[] = Array.from({ length: 8 }).map((_, i) => ({
+      id: i + 1,
+      shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
+      status: 'cutting' as const,
+      progress: 0,
+    }));
+    setAiPlayers(players);
+  }, []);
 
   useEffect(() => {
     if (doneRef.current) return;
@@ -114,6 +140,19 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
         }
         return Math.max(0, t - 0.1);
       });
+
+      setAiPlayers(prev => prev.map(p => {
+        if (p.status !== 'cutting') return p;
+        const newProgress = p.progress + 1.5 + Math.random() * 2;
+        if (newProgress >= 100) {
+          const success = Math.random() < SHAPE_DIFFICULTY[p.shape];
+          return { ...p, progress: 100, status: success ? 'success' : 'failed' };
+        }
+        if (Math.random() < 0.005) {
+          return { ...p, status: 'failed' };
+        }
+        return { ...p, progress: newProgress };
+      }));
     }, 100);
     return () => clearInterval(timer);
   }, [onLose]);
@@ -132,6 +171,32 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
     const target = pts[currentSegmentRef.current];
     if (!target) return;
 
+    const now = performance.now();
+    if (lastPosRef.current) {
+      const dx = pos.x - lastPosRef.current.x;
+      const dy = pos.y - lastPosRef.current.y;
+      const dt = now - lastPosRef.current.time;
+      if (dt > 0) {
+        const speed = Math.sqrt(dx * dx + dy * dy) / dt;
+        if (speed > 1.5 && isTracing) {
+          audio.playCrack();
+          setCrackLevel(prev => {
+            const next = prev + 5;
+            if (next >= 100 && !doneRef.current) {
+              doneRef.current = true;
+              setTimeout(() => {
+                setShowResult('lose');
+                setTimeout(onLose, 1500);
+              }, 0);
+              return 100;
+            }
+            return Math.min(next, 100);
+          });
+        }
+      }
+    }
+    lastPosRef.current = { x: pos.x, y: pos.y, time: now };
+
     const dist = Math.sqrt((pos.x - target.x) ** 2 + (pos.y - target.y) ** 2);
     const tolerance = 25;
 
@@ -145,6 +210,7 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
         setTimeout(onWin, 1500);
       }
     } else if (dist > tolerance * 2.5 && isTracing) {
+      audio.playCrack();
       setCrackLevel(prev => {
         const next = prev + 3;
         if (next >= 100 && !doneRef.current) {
@@ -158,7 +224,7 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
         return Math.min(next, 100);
       });
     }
-  }, [isTracing, onWin, onLose]);
+  }, [isTracing, onWin, onLose, audio]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     const pt = getSVGPoint(e);
@@ -169,6 +235,7 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     setIsTracing(true);
+    lastPosRef.current = null;
     const pt = getSVGPoint(e);
     if (pt) {
       setNeedlePos(pt);
@@ -177,12 +244,14 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
   }, [getSVGPoint, checkProximity]);
 
   const candyColor = crackLevel > 50 ? `hsl(30, ${60 - crackLevel * 0.4}%, ${55 + crackLevel * 0.2}%)` : '#d4a548';
+  const aiSuccessCount = aiPlayers.filter(p => p.status === 'success').length;
+  const aiFailedCount = aiPlayers.filter(p => p.status === 'failed').length;
 
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center z-20">
       <div className="absolute inset-0 bg-gradient-to-b from-amber-950/40 to-black/80" />
 
-      <div className="z-10 flex flex-col items-center gap-4 w-full max-w-md px-4">
+      <div className="z-10 flex flex-col items-center gap-3 w-full max-w-md px-4">
         <div className="flex justify-between items-center w-full">
           <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10">
             <span className="text-zinc-400 font-mono text-xs uppercase">Time </span>
@@ -196,11 +265,26 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
           </div>
         </div>
 
+        <div className="flex gap-2 w-full justify-center">
+          {aiPlayers.map(p => (
+            <div key={p.id} className={`w-5 h-5 rounded-full border text-[6px] flex items-center justify-center font-mono ${
+              p.status === 'success' ? 'bg-squid-teal/30 border-squid-teal text-squid-teal' :
+              p.status === 'failed' ? 'bg-red-900/30 border-red-700 text-red-500 line-through' :
+              'bg-zinc-800 border-zinc-600 text-zinc-500'
+            }`}>
+              {p.status === 'success' ? '✓' : p.status === 'failed' ? '✕' : Math.floor(p.progress) + '%'}
+            </div>
+          ))}
+        </div>
+        <div className="text-zinc-500 font-mono text-[10px] text-center">
+          AI Players: {aiSuccessCount} passed · {aiFailedCount} failed · {aiPlayers.filter(p => p.status === 'cutting').length} cutting
+        </div>
+
         <div className="w-full bg-zinc-800/50 rounded-full h-2 border border-white/10">
           <div className="h-full bg-squid-teal rounded-full transition-all" style={{ width: `${traceProgress}%` }} />
         </div>
 
-        <div className="relative bg-gradient-to-b from-amber-700/90 to-amber-900/90 rounded-full w-[320px] h-[320px] md:w-[380px] md:h-[380px] border-4 border-amber-600/50 shadow-[0_0_40px_rgba(180,120,30,0.3),inset_0_0_30px_rgba(0,0,0,0.3)] flex items-center justify-center overflow-hidden"
+        <div className="relative bg-gradient-to-b from-amber-700/90 to-amber-900/90 rounded-full w-[280px] h-[280px] md:w-[340px] md:h-[340px] border-4 border-amber-600/50 shadow-[0_0_40px_rgba(180,120,30,0.3),inset_0_0_30px_rgba(0,0,0,0.3)] flex items-center justify-center overflow-hidden"
           style={{ cursor: 'none' }}
         >
           {crackLevel > 20 && (
@@ -223,8 +307,8 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
             className="w-full h-full touch-none"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
-            onPointerUp={() => setIsTracing(false)}
-            onPointerLeave={() => setIsTracing(false)}
+            onPointerUp={() => { setIsTracing(false); lastPosRef.current = null; }}
+            onPointerLeave={() => { setIsTracing(false); lastPosRef.current = null; }}
           >
             <path
               d={getShapeSVGPath(shape, 200, 200, 80)}
@@ -260,7 +344,7 @@ export function DalgonaCandy({ onWin, onLose }: Props) {
         </div>
 
         <p className="text-zinc-500 font-mono text-xs text-center">
-          Click and drag along the dotted line to cut the shape
+          Trace the shape slowly and carefully. Moving too fast or off-path cracks the candy.
         </p>
       </div>
 

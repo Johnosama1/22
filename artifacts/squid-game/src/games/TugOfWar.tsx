@@ -4,14 +4,14 @@ import { motion } from 'framer-motion';
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { initAudio: () => void };
+  audio: { playTugPull: () => void; playCrowdCheer: () => void; initAudio: () => void };
 }
 
 const TEAM_SIZE = 10;
 const WIN_THRESHOLD = 100;
 const GAME_TIME = 30;
 
-export function TugOfWar({ onWin, onLose }: Props) {
+export function TugOfWar({ onWin, onLose, audio }: Props) {
   const [position, setPosition] = useState(0);
   const [timeLeft, setTimeLeft] = useState(GAME_TIME);
   const [pullCount, setPullCount] = useState(0);
@@ -73,11 +73,13 @@ export function TugOfWar({ onWin, onLose }: Props) {
     const rapid = now - lastPullRef.current < 200;
     lastPullRef.current = now;
     const force = rapid ? 6 : 4;
+    audio.playTugPull();
     setPullCount(c => c + 1);
     setPosition(prev => {
       const next = prev - force;
       if (next <= -WIN_THRESHOLD) {
         doneRef.current = true;
+        audio.playCrowdCheer();
         setTimeout(() => {
           setShowResult('win');
           setTimeout(onWin, 1500);
@@ -86,7 +88,7 @@ export function TugOfWar({ onWin, onLose }: Props) {
       }
       return next;
     });
-  }, [onWin]);
+  }, [onWin, audio]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

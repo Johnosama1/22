@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { initAudio: () => void };
+  audio: { playMarbleClink: () => void; initAudio: () => void };
 }
 
 const TOTAL_MARBLES = 20;
@@ -12,7 +12,7 @@ const GAME_TIME = 90;
 
 type RoundPhase = 'BET' | 'GUESS' | 'REVEAL' | 'RESULT';
 
-export function Marbles({ onWin, onLose }: Props) {
+export function Marbles({ onWin, onLose, audio }: Props) {
   const [playerMarbles, setPlayerMarbles] = useState(10);
   const [opponentMarbles, setOpponentMarbles] = useState(10);
   const [timeLeft, setTimeLeft] = useState(GAME_TIME);
@@ -70,6 +70,7 @@ export function Marbles({ onWin, onLose }: Props) {
     const hand = 1 + Math.floor(Math.random() * maxOpp);
     setOpponentHand(hand);
     setRoundPhase('REVEAL');
+    audio.playMarbleClink();
 
     const isOdd = hand % 2 !== 0;
     const correct = (g === 'odd' && isOdd) || (g === 'even' && !isOdd);

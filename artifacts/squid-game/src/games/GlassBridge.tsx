@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { playShot: () => void; initAudio: () => void };
+  audio: { playShot: () => void; playGlassShatter: () => void; playGlassStep: () => void; playTensionDrone: () => void; stopDrone: () => void; initAudio: () => void };
 }
 
 const BRIDGE_LENGTH = 18;
@@ -78,6 +78,15 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
   }, []);
 
   useEffect(() => {
+    if (!aiPhase && !doneRef.current) {
+      audio.playTensionDrone();
+    }
+    return () => {
+      if (!aiPhase) audio.stopDrone();
+    };
+  }, [aiPhase, audio]);
+
+  useEffect(() => {
     if (aiPhase || doneRef.current) return;
     const timer = setInterval(() => {
       setTimeLeft(t => {
@@ -107,10 +116,12 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
       if (side === 'left') newBridge[currentStep] = { ...row, leftState: 'safe' };
       else newBridge[currentStep] = { ...row, rightState: 'safe' };
       setBridge(newBridge);
+      audio.playGlassStep();
       const nextStep = currentStep + 1;
       setCurrentStep(nextStep);
       if (nextStep >= BRIDGE_LENGTH) {
         doneRef.current = true;
+        audio.stopDrone();
         setShowResult('win');
         setTimeout(onWin, 1500);
       }
@@ -118,7 +129,8 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
       if (side === 'left') newBridge[currentStep] = { ...row, leftState: 'broken' };
       else newBridge[currentStep] = { ...row, rightState: 'broken' };
       setBridge(newBridge);
-      audio.playShot();
+      audio.playGlassShatter();
+      audio.stopDrone();
       doneRef.current = true;
       setShowResult('lose');
       setTimeout(onLose, 1500);

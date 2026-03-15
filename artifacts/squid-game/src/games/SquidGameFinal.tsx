@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { initAudio: () => void };
+  audio: { playClash: () => void; playTensionDrone: () => void; stopDrone: () => void; initAudio: () => void };
 }
 
 type Action = 'MOVE' | 'DODGE' | 'ATTACK';
@@ -21,7 +21,7 @@ interface TurnResult {
 
 const SQUID_PATH = "M200,50 L280,120 L280,200 L350,200 L350,280 L280,280 L280,350 L200,420 L120,350 L120,280 L50,280 L50,200 L120,200 L120,120 Z";
 
-export function SquidGameFinal({ onWin, onLose }: Props) {
+export function SquidGameFinal({ onWin, onLose, audio }: Props) {
   const [playerHP, setPlayerHP] = useState(3);
   const [defenderHP, setDefenderHP] = useState(3);
   const [playerPos, setPlayerPos] = useState(0);
@@ -29,6 +29,11 @@ export function SquidGameFinal({ onWin, onLose }: Props) {
   const [turnHistory, setTurnHistory] = useState<TurnResult[]>([]);
   const [showResult, setShowResult] = useState<'win' | 'lose' | null>(null);
   const [currentResult, setCurrentResult] = useState<TurnResult | null>(null);
+
+  useEffect(() => {
+    audio.playTensionDrone();
+    return () => { audio.stopDrone(); };
+  }, [audio]);
 
   const resolveAction = useCallback((action: Action) => {
     if (turnPhase !== 'CHOOSE') return;
@@ -80,6 +85,10 @@ export function SquidGameFinal({ onWin, onLose }: Props) {
       }
     }
 
+    if (playerHit || defenderHit || action === 'ATTACK') {
+      audio.playClash();
+    }
+
     const result: TurnResult = { playerAction: action, defenderAction: defAction, playerHit, defenderHit, message };
     setCurrentResult(result);
     setTurnHistory(prev => [...prev, result]);
@@ -90,10 +99,12 @@ export function SquidGameFinal({ onWin, onLose }: Props) {
 
     setTimeout(() => {
       if (newPlayerHP <= 0) {
+        audio.stopDrone();
         setShowResult('lose');
         setTurnPhase('DONE');
         setTimeout(onLose, 1500);
       } else if (newDefenderHP <= 0 || newPlayerPos >= 5) {
+        audio.stopDrone();
         setShowResult('win');
         setTurnPhase('DONE');
         setTimeout(onWin, 1500);
