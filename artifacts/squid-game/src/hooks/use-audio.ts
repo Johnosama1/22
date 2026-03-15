@@ -4,6 +4,7 @@ export function useAudio() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const droneOscRef = useRef<OscillatorNode | null>(null);
   const droneGainRef = useRef<GainNode | null>(null);
+  const lfoOscRef = useRef<OscillatorNode | null>(null);
 
   const initAudio = useCallback(() => {
     if (!audioCtxRef.current) {
@@ -49,6 +50,11 @@ export function useAudio() {
         droneOscRef.current?.disconnect();
         droneOscRef.current = null;
         droneGainRef.current = null;
+        if (lfoOscRef.current) {
+          lfoOscRef.current.stop();
+          lfoOscRef.current.disconnect();
+          lfoOscRef.current = null;
+        }
       }, 500);
     }
   }, []);
@@ -261,6 +267,7 @@ export function useAudio() {
     lfo.connect(lfoGain);
     lfoGain.connect(osc.frequency);
     lfo.start();
+    lfoOscRef.current = lfo;
     gain.gain.setValueAtTime(0, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 1);
     osc.connect(gain);
