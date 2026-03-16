@@ -140,10 +140,11 @@ export function AnnouncementScreen({ count, roundNumber }: {
   );
 }
 
-export function LoseScreen({ startGame, roundName }: {
+export function LoseScreen({ startGame, currentRound }: {
   startGame: () => void;
   returnToMenu: () => void;
   roundName: string;
+  currentRound: number;
 }) {
   const { t } = useLanguage();
   return (
@@ -157,7 +158,7 @@ export function LoseScreen({ startGame, roundName }: {
           {t('lose.title')}
         </h2>
         <p className="text-xl md:text-2xl text-zinc-400 font-mono">
-          {t('lose.message')} {roundName}.<br/>{t('lose.money')}
+          {t('lose.message')} {t(`round.${currentRound}`)}.<br/>{t('lose.money')}
         </p>
         <div className="pt-8">
           <NeonButton onClick={startGame} variant="pink">
@@ -178,7 +179,7 @@ const ROUND_PRIZES: Record<number, string> = {
   6: '₩45.6 Billion',
 };
 
-export function WinScreen({ currentRound, roundName, onTakeReward, onContinue }: {
+export function WinScreen({ currentRound, onTakeReward, onContinue }: {
   currentRound: number;
   roundName: string;
   onTakeReward: () => void;
@@ -199,7 +200,7 @@ export function WinScreen({ currentRound, roundName, onTakeReward, onContinue }:
             {t('win.title')}
           </h2>
           <p className="text-xl md:text-2xl text-emerald-200 font-mono">
-            {t('win.survived')} {roundName}!
+            {t('win.survived')} {t(`round.${currentRound}`)}!
           </p>
           <p className="text-lg text-yellow-300 font-mono">
             {t('win.prize')} {ROUND_PRIZES[currentRound]}

@@ -16,7 +16,7 @@ export interface PlayerData {
 }
 
 const TOTAL_DISTANCE = 100;
-const USER_MOVE_STEP = 3;
+const USER_MOVE_STEP = 2;
 
 interface Props {
   onWin: () => void;
@@ -46,7 +46,7 @@ export function RedLightGreenLight({ onWin, onLose, audio }: Props) {
       progress: 0,
       status: 'ALIVE',
       speed: 0.2 + Math.random() * 0.4,
-      discipline: 0.7 + Math.random() * 0.3,
+      discipline: 0.85 + Math.random() * 0.13,
     }));
     setPlayers(initialPlayers);
     setTimeLeft(45);
@@ -100,7 +100,7 @@ export function RedLightGreenLight({ onWin, onLose, audio }: Props) {
       setLightState(prev => {
         const next = prev === 'GREEN' ? 'RED' : 'GREEN';
         if (next === 'RED') audio.playDollTurn();
-        const duration = next === 'RED' ? 1000 + Math.random() * 2000 : 2000 + Math.random() * 2000;
+        const duration = next === 'RED' ? 2000 + Math.random() * 2000 : 2000 + Math.random() * 2000;
         lightTimerRef.current = setTimeout(switchLight, duration);
         return next;
       });

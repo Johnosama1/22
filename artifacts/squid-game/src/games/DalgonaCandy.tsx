@@ -212,7 +212,7 @@ export function DalgonaCandy({ onWin, onLose, audio }: Props) {
     } else if (dist > tolerance * 2.5 && isTracing) {
       audio.playCrack();
       setCrackLevel(prev => {
-        const next = prev + 3;
+        const next = prev + 6;
         if (next >= 100 && !doneRef.current) {
           doneRef.current = true;
           setTimeout(() => {

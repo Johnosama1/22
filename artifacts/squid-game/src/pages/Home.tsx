@@ -73,7 +73,7 @@ export default function Home() {
             />
           )}
           {gamePhase === 'LOST' && (
-            <LoseScreen key="lose" startGame={startGame} returnToMenu={returnToMenu} roundName={roundInfo.name} />
+            <LoseScreen key="lose" startGame={startGame} returnToMenu={returnToMenu} roundName={roundInfo.name} currentRound={currentRound} />
           )}
           {gamePhase === 'WON' && (
             <WinScreen
