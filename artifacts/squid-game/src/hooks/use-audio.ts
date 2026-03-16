@@ -7,6 +7,8 @@ export function useAudio() {
   const lfoOscRef = useRef<OscillatorNode | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+  const bgMusicSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const bgMusicGainRef = useRef<GainNode | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const isMutedRef = useRef(false);
 
@@ -38,9 +40,6 @@ export function useAudio() {
       if (masterGainRef.current) {
         masterGainRef.current.gain.value = next ? 0 : 1;
       }
-      if (bgMusicRef.current) {
-        bgMusicRef.current.muted = next;
-      }
       return next;
     });
   }, []);
@@ -52,19 +51,37 @@ export function useAudio() {
       }
       return;
     }
+    initAudio();
+    const ctx = audioCtxRef.current;
+    const master = getMaster();
+    if (!ctx || !master) return;
     const el = new Audio(`${import.meta.env.BASE_URL}squid-game-music.mp3`);
+    el.crossOrigin = 'anonymous';
     el.loop = true;
-    el.volume = 0.35;
-    el.muted = isMutedRef.current;
     bgMusicRef.current = el;
+    const source = ctx.createMediaElementSource(el);
+    bgMusicSourceRef.current = source;
+    const gain = ctx.createGain();
+    gain.gain.value = 0.35;
+    bgMusicGainRef.current = gain;
+    source.connect(gain);
+    gain.connect(master);
     el.play().catch(() => {});
-  }, []);
+  }, [initAudio, getMaster]);
 
   const stopMusic = useCallback(() => {
     if (bgMusicRef.current) {
       bgMusicRef.current.pause();
       bgMusicRef.current.src = '';
       bgMusicRef.current = null;
+    }
+    if (bgMusicSourceRef.current) {
+      bgMusicSourceRef.current.disconnect();
+      bgMusicSourceRef.current = null;
+    }
+    if (bgMusicGainRef.current) {
+      bgMusicGainRef.current.disconnect();
+      bgMusicGainRef.current = null;
     }
   }, []);
 
