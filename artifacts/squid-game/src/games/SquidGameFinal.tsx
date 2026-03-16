@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { playClash: () => void; playTensionDrone: () => void; stopDrone: () => void; initAudio: () => void };
+  audio: { playClash: () => void; initAudio: () => void };
 }
 
 type Action = 'MOVE' | 'DODGE' | 'ATTACK';
@@ -30,10 +30,6 @@ export function SquidGameFinal({ onWin, onLose, audio }: Props) {
   const [showResult, setShowResult] = useState<'win' | 'lose' | null>(null);
   const [currentResult, setCurrentResult] = useState<TurnResult | null>(null);
 
-  useEffect(() => {
-    audio.playTensionDrone();
-    return () => { audio.stopDrone(); };
-  }, [audio]);
 
   const resolveAction = useCallback((action: Action) => {
     if (turnPhase !== 'CHOOSE') return;
@@ -99,12 +95,10 @@ export function SquidGameFinal({ onWin, onLose, audio }: Props) {
 
     setTimeout(() => {
       if (newPlayerHP <= 0) {
-        audio.stopDrone();
         setShowResult('lose');
         setTurnPhase('DONE');
         setTimeout(onLose, 1500);
       } else if (newDefenderHP <= 0 || newPlayerPos >= 5) {
-        audio.stopDrone();
         setShowResult('win');
         setTurnPhase('DONE');
         setTimeout(onWin, 1500);

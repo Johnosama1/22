@@ -6,6 +6,7 @@ export function useAudio() {
   const droneGainRef = useRef<GainNode | null>(null);
   const lfoOscRef = useRef<OscillatorNode | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const isMutedRef = useRef(false);
 
@@ -37,8 +38,34 @@ export function useAudio() {
       if (masterGainRef.current) {
         masterGainRef.current.gain.value = next ? 0 : 1;
       }
+      if (bgMusicRef.current) {
+        bgMusicRef.current.muted = next;
+      }
       return next;
     });
+  }, []);
+
+  const playMusic = useCallback(() => {
+    if (bgMusicRef.current) {
+      if (bgMusicRef.current.paused) {
+        bgMusicRef.current.play().catch(() => {});
+      }
+      return;
+    }
+    const el = new Audio(`${import.meta.env.BASE_URL}squid-game-music.mp3`);
+    el.loop = true;
+    el.volume = 0.35;
+    el.muted = isMutedRef.current;
+    bgMusicRef.current = el;
+    el.play().catch(() => {});
+  }, []);
+
+  const stopMusic = useCallback(() => {
+    if (bgMusicRef.current) {
+      bgMusicRef.current.pause();
+      bgMusicRef.current.src = '';
+      bgMusicRef.current = null;
+    }
   }, []);
 
   const dest = useCallback(() => getMaster() ?? audioCtxRef.current?.destination ?? null, [getMaster]);
@@ -333,21 +360,22 @@ export function useAudio() {
   useEffect(() => {
     return () => {
       stopDrone();
+      stopMusic();
       if (audioCtxRef.current?.state !== 'closed') {
         audioCtxRef.current?.close();
       }
     };
-  }, [stopDrone]);
+  }, [stopDrone, stopMusic]);
 
   return useMemo(() => ({
     initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin,
     playCrack, playTugPull, playCrowdCheer, playMarbleClink,
     playGlassShatter, playGlassStep, playTensionDrone, playClash,
-    toggleMute, isMuted,
+    toggleMute, isMuted, playMusic, stopMusic,
   }), [
     initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin,
     playCrack, playTugPull, playCrowdCheer, playMarbleClink,
     playGlassShatter, playGlassStep, playTensionDrone, playClash,
-    toggleMute, isMuted,
+    toggleMute, isMuted, playMusic, stopMusic,
   ]);
 }

@@ -22,8 +22,6 @@ interface Props {
   onWin: () => void;
   onLose: () => void;
   audio: {
-    playDrone: (isRed: boolean) => void;
-    stopDrone: () => void;
     playShot: () => void;
     playDollTurn: () => void;
   };
@@ -54,10 +52,6 @@ export function RedLightGreenLight({ onWin, onLose, audio }: Props) {
     doneRef.current = false;
   }, []);
 
-  useEffect(() => {
-    audio.playDrone(isRed);
-    return () => { audio.stopDrone(); };
-  }, [isRed]);
 
   useEffect(() => {
     gameLoopRef.current = window.setInterval(() => {
@@ -123,7 +117,6 @@ export function RedLightGreenLight({ onWin, onLose, audio }: Props) {
         const newProgress = Math.min(TOTAL_DISTANCE, user.progress + USER_MOVE_STEP);
         if (newProgress >= TOTAL_DISTANCE) {
           doneRef.current = true;
-          audio.stopDrone();
           setTimeout(onWin, 0);
           return current.map(p => p.isUser ? { ...p, status: 'FINISHED', progress: newProgress } : p);
         }

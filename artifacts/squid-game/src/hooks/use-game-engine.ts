@@ -22,6 +22,7 @@ export function useGameEngine() {
 
   const startGame = useCallback(() => {
     audio.initAudio();
+    audio.playMusic();
     setCurrentRound(1);
     setAnnouncementCount(3);
     setGamePhase('ANNOUNCING');

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useGameEngine } from '@/hooks/use-game-engine';
 import { LandingScreen, AnnouncementScreen, LoseScreen, WinScreen, RewardScreen, GrandVictoryScreen } from './GameScreens';
@@ -21,6 +22,11 @@ export default function Home() {
     takeReward,
     returnToMenu,
   } = useGameEngine();
+
+  useEffect(() => {
+    audio.playMusic();
+    return () => { audio.stopMusic(); };
+  }, [audio.playMusic, audio.stopMusic]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-zinc-950 selection:bg-squid-pink/30">
