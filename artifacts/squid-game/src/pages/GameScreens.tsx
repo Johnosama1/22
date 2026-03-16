@@ -75,8 +75,6 @@ export function LandingScreen({ startGame }: { startGame: () => void; returnToMe
 export function AnnouncementScreen({ count, roundNumber }: {
   count: number;
   roundNumber: number;
-  roundName: string;
-  announcementText: string;
 }) {
   const { t } = useLanguage();
   const announcementKey = `announce.${roundNumber}`;
@@ -142,8 +140,6 @@ export function AnnouncementScreen({ count, roundNumber }: {
 
 export function LoseScreen({ startGame, currentRound }: {
   startGame: () => void;
-  returnToMenu: () => void;
-  roundName: string;
   currentRound: number;
 }) {
   const { t } = useLanguage();
@@ -177,7 +173,6 @@ function usePrize(round: number) {
 
 export function WinScreen({ currentRound, onTakeReward, onContinue }: {
   currentRound: number;
-  roundName: string;
   onTakeReward: () => void;
   onContinue: () => void;
 }) {

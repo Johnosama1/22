@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion';
-import { useGameEngine, ROUND_INFO } from '@/hooks/use-game-engine';
+import { useGameEngine } from '@/hooks/use-game-engine';
 import { LandingScreen, AnnouncementScreen, LoseScreen, WinScreen, RewardScreen, GrandVictoryScreen } from './GameScreens';
 import { RedLightGreenLight } from '@/games/RedLightGreenLight';
 import { DalgonaCandy } from '@/games/DalgonaCandy';
@@ -22,15 +22,13 @@ export default function Home() {
     returnToMenu,
   } = useGameEngine();
 
-  const roundInfo = ROUND_INFO[currentRound];
-
   return (
     <div className="relative w-full h-screen overflow-hidden bg-zinc-950 selection:bg-squid-pink/30">
       <div className="absolute inset-0 opacity-[0.06]" style={{
         backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.03) 40px, rgba(255,255,255,0.03) 41px)',
       }} />
 
-      <div className="relative w-full h-full max-w-[520px] mx-auto bg-black shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+      <div className="relative w-full h-full max-w-[480px] mx-auto bg-black shadow-[0_0_80px_rgba(0,0,0,0.8)]">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
           style={{
@@ -68,18 +66,15 @@ export default function Home() {
               key={`announce-${currentRound}`}
               count={announcementCount}
               roundNumber={currentRound}
-              roundName={roundInfo.name}
-              announcementText={roundInfo.announcement}
             />
           )}
           {gamePhase === 'LOST' && (
-            <LoseScreen key="lose" startGame={startGame} returnToMenu={returnToMenu} roundName={roundInfo.name} currentRound={currentRound} />
+            <LoseScreen key="lose" startGame={startGame} currentRound={currentRound} />
           )}
           {gamePhase === 'WON' && (
             <WinScreen
               key="win"
               currentRound={currentRound}
-              roundName={roundInfo.name}
               onTakeReward={takeReward}
               onContinue={advanceToNextRound}
             />
