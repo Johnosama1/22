@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { NeonButton, SquidShapes, LandingCharacter } from '@/components/UIComponents';
 import { TOTAL_ROUNDS } from '@/hooks/use-game-engine';
+import { useLanguage } from '@/hooks/use-language';
 
 function TypewriterText({ text, className }: { text: string; className?: string }) {
   return (
@@ -34,6 +35,7 @@ function MaskedGuard() {
 }
 
 export function LandingScreen({ startGame }: { startGame: () => void; returnToMenu: () => void }) {
+  const { t, lang, toggleLang } = useLanguage();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -46,31 +48,39 @@ export function LandingScreen({ startGame }: { startGame: () => void; returnToMe
         <SquidShapes />
         <div className="space-y-4">
           <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase leading-none">
-            Welcome to the <br/>
-            <span className="text-squid-pink text-glow-pink">Games</span>
+            {t('landing.title.line1')} <br/>
+            <span className="text-squid-pink text-glow-pink">{t('landing.title.line2')}</span>
           </h1>
-          <p className="text-lg md:text-xl text-zinc-400 font-mono">
-            Player 456, your debt is overwhelming.
-            <br />Survive, and win the ultimate prize.
+          <p className="text-lg md:text-xl text-zinc-400 font-mono whitespace-pre-line">
+            {t('landing.subtitle')}
           </p>
         </div>
         <div className="py-4">
           <LandingCharacter />
         </div>
         <NeonButton onClick={startGame} variant="pink" className="mt-4 scale-110">
-          PLAY
+          {t('landing.play')}
         </NeonButton>
+        <button
+          onClick={toggleLang}
+          className="mt-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-zinc-300 font-mono text-sm hover:bg-white/20 transition-colors"
+        >
+          {lang === 'en' ? 'العربية' : 'English'}
+        </button>
       </div>
     </motion.div>
   );
 }
 
-export function AnnouncementScreen({ count, roundNumber, roundName, announcementText }: {
+export function AnnouncementScreen({ count, roundNumber }: {
   count: number;
   roundNumber: number;
   roundName: string;
   announcementText: string;
 }) {
+  const { t } = useLanguage();
+  const announcementKey = `announce.${roundNumber}`;
+  const roundNameKey = `round.${roundNumber}`;
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -94,7 +104,7 @@ export function AnnouncementScreen({ count, roundNumber, roundName, announcement
             transition={{ delay: 0.2 }}
             className="text-zinc-500 font-mono text-sm uppercase tracking-widest"
           >
-            Round {roundNumber} of {TOTAL_ROUNDS}
+            {t('announce.round')} {roundNumber} {t('announce.of')} {TOTAL_ROUNDS}
           </motion.div>
           <motion.h2
             initial={{ y: 20, opacity: 0 }}
@@ -102,7 +112,7 @@ export function AnnouncementScreen({ count, roundNumber, roundName, announcement
             transition={{ delay: 0.3 }}
             className="text-2xl md:text-4xl font-mono text-white leading-relaxed"
           >
-            <TypewriterText text={announcementText} />
+            <TypewriterText text={t(announcementKey)} />
           </motion.h2>
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -110,7 +120,7 @@ export function AnnouncementScreen({ count, roundNumber, roundName, announcement
             transition={{ delay: 1.5 }}
           >
             <span className="text-squid-teal font-display font-black tracking-widest text-glow-teal text-3xl md:text-5xl uppercase block">
-              {roundName}
+              {t(roundNameKey)}
             </span>
           </motion.div>
         </div>
@@ -135,6 +145,7 @@ export function LoseScreen({ startGame, roundName }: {
   returnToMenu: () => void;
   roundName: string;
 }) {
+  const { t } = useLanguage();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 1.1 }}
@@ -143,14 +154,14 @@ export function LoseScreen({ startGame, roundName }: {
     >
       <div className="text-center space-y-8 px-6">
         <h2 className="text-5xl md:text-7xl font-black text-red-600 tracking-widest uppercase shadow-red-500/50 drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]">
-          ELIMINATED
+          {t('lose.title')}
         </h2>
         <p className="text-xl md:text-2xl text-zinc-400 font-mono">
-          You failed {roundName}.<br/>All your money is gone.
+          {t('lose.message')} {roundName}.<br/>{t('lose.money')}
         </p>
         <div className="pt-8">
           <NeonButton onClick={startGame} variant="pink">
-            Play Again
+            {t('lose.playAgain')}
           </NeonButton>
         </div>
       </div>
@@ -173,6 +184,7 @@ export function WinScreen({ currentRound, roundName, onTakeReward, onContinue }:
   onTakeReward: () => void;
   onContinue: () => void;
 }) {
+  const { t } = useLanguage();
   const isFinalRound = currentRound >= TOTAL_ROUNDS;
   return (
     <motion.div
@@ -184,13 +196,13 @@ export function WinScreen({ currentRound, roundName, onTakeReward, onContinue }:
         <SquidShapes />
         <div className="space-y-4">
           <h2 className="text-4xl md:text-6xl font-black text-white tracking-widest uppercase drop-shadow-xl">
-            Congratulations
+            {t('win.title')}
           </h2>
           <p className="text-xl md:text-2xl text-emerald-200 font-mono">
-            You survived {roundName}!
+            {t('win.survived')} {roundName}!
           </p>
           <p className="text-lg text-yellow-300 font-mono">
-            Prize so far: {ROUND_PRIZES[currentRound]}
+            {t('win.prize')} {ROUND_PRIZES[currentRound]}
           </p>
         </div>
 
@@ -198,23 +210,23 @@ export function WinScreen({ currentRound, roundName, onTakeReward, onContinue }:
           {isFinalRound ? (
             <>
               <p className="text-lg md:text-xl text-white">
-                You have conquered all the games!
+                {t('win.conquered')}
               </p>
               <NeonButton onClick={onContinue} variant="teal">
-                Claim the Grand Prize
+                {t('win.claimGrand')}
               </NeonButton>
             </>
           ) : (
             <>
               <p className="text-lg md:text-xl text-white">
-                Do you want to take {ROUND_PRIZES[currentRound]} and leave, or continue playing for a bigger reward?
+                {t('win.takeOrContinue')}
               </p>
               <div className="flex flex-col md:flex-row gap-4 justify-center">
                 <NeonButton onClick={onTakeReward} variant="pink">
-                  YES — Take money
+                  {t('win.takeMoney')}
                 </NeonButton>
                 <NeonButton onClick={onContinue} variant="teal">
-                  NO — Continue
+                  {t('win.continue')}
                 </NeonButton>
               </div>
             </>
@@ -229,6 +241,7 @@ export function RewardScreen({ currentRound, returnToMenu }: {
   currentRound: number;
   returnToMenu: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -247,12 +260,12 @@ export function RewardScreen({ currentRound, returnToMenu }: {
         <h2 className="text-4xl md:text-6xl font-black text-yellow-400 tracking-widest">
           {ROUND_PRIZES[currentRound]}
         </h2>
-        <p className="text-xl text-zinc-400 font-mono">Transferred to your account.</p>
-        <p className="text-sm text-zinc-600 font-mono">You chose to leave after Round {currentRound}.</p>
+        <p className="text-xl text-zinc-400 font-mono">{t('reward.transferred')}</p>
+        <p className="text-sm text-zinc-600 font-mono">{t('reward.leftAfter')} {currentRound}.</p>
 
         <div className="pt-8">
           <NeonButton onClick={returnToMenu} variant="pink">
-            Return Home
+            {t('reward.returnHome')}
           </NeonButton>
         </div>
       </div>
@@ -261,6 +274,7 @@ export function RewardScreen({ currentRound, returnToMenu }: {
 }
 
 export function GrandVictoryScreen({ returnToMenu }: { returnToMenu: () => void }) {
+  const { t } = useLanguage();
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -280,13 +294,13 @@ export function GrandVictoryScreen({ returnToMenu }: { returnToMenu: () => void 
 
         <div className="space-y-4">
           <h2 className="text-5xl md:text-7xl font-black text-yellow-400 tracking-widest drop-shadow-[0_0_20px_rgba(250,204,21,0.5)]">
-            45.6 BILLION WON
+            {t('grand.amount')}
           </h2>
           <p className="text-2xl text-squid-teal font-mono text-glow-teal">
-            GRAND CHAMPION
+            {t('grand.champion')}
           </p>
           <p className="text-lg text-zinc-400 font-mono">
-            Player 456 — You survived all 6 games.
+            {t('grand.survived')}
           </p>
         </div>
 
@@ -297,28 +311,15 @@ export function GrandVictoryScreen({ returnToMenu }: { returnToMenu: () => void 
           className="space-y-4"
         >
           <div className="grid grid-cols-3 gap-2 text-xs font-mono text-zinc-500">
-            <div className="bg-black/40 rounded p-2 border border-white/5">
-              <span className="text-squid-teal block">Round 1</span>Red Light, Green Light
-            </div>
-            <div className="bg-black/40 rounded p-2 border border-white/5">
-              <span className="text-squid-teal block">Round 2</span>Dalgona Candy
-            </div>
-            <div className="bg-black/40 rounded p-2 border border-white/5">
-              <span className="text-squid-teal block">Round 3</span>Tug of War
-            </div>
-            <div className="bg-black/40 rounded p-2 border border-white/5">
-              <span className="text-squid-teal block">Round 4</span>Marbles
-            </div>
-            <div className="bg-black/40 rounded p-2 border border-white/5">
-              <span className="text-squid-teal block">Round 5</span>Glass Bridge
-            </div>
-            <div className="bg-black/40 rounded p-2 border border-white/5">
-              <span className="text-squid-teal block">Round 6</span>Squid Game
-            </div>
+            {[1, 2, 3, 4, 5, 6].map(r => (
+              <div key={r} className="bg-black/40 rounded p-2 border border-white/5">
+                <span className="text-squid-teal block">{t('announce.round')} {r}</span>{t(`round.${r}`)}
+              </div>
+            ))}
           </div>
           <div className="pt-4">
             <NeonButton onClick={returnToMenu} variant="pink">
-              Play Again
+              {t('grand.playAgain')}
             </NeonButton>
           </div>
         </motion.div>

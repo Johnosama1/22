@@ -32,7 +32,7 @@ interface Props {
 export function RedLightGreenLight({ onWin, onLose, audio }: Props) {
   const [lightState, setLightState] = useState<LightState>('GREEN');
   const [players, setPlayers] = useState<PlayerData[]>([]);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(45);
   const gameLoopRef = useRef<number | null>(null);
   const lightTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isRed = lightState === 'RED';
@@ -49,7 +49,7 @@ export function RedLightGreenLight({ onWin, onLose, audio }: Props) {
       discipline: 0.7 + Math.random() * 0.3,
     }));
     setPlayers(initialPlayers);
-    setTimeLeft(60);
+    setTimeLeft(45);
     setLightState('GREEN');
     doneRef.current = false;
   }, []);
@@ -100,12 +100,12 @@ export function RedLightGreenLight({ onWin, onLose, audio }: Props) {
       setLightState(prev => {
         const next = prev === 'GREEN' ? 'RED' : 'GREEN';
         if (next === 'RED') audio.playDollTurn();
-        const duration = next === 'RED' ? 1000 + Math.random() * 2000 : 3000 + Math.random() * 3000;
+        const duration = next === 'RED' ? 1000 + Math.random() * 2000 : 2000 + Math.random() * 2000;
         lightTimerRef.current = setTimeout(switchLight, duration);
         return next;
       });
     };
-    lightTimerRef.current = setTimeout(switchLight, 3000);
+    lightTimerRef.current = setTimeout(switchLight, 2500);
     return () => { if (lightTimerRef.current) clearTimeout(lightTimerRef.current); };
   }, []);
 

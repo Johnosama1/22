@@ -1,10 +1,21 @@
-import { useRef, useCallback, useEffect, useMemo } from 'react';
+import { useRef, useCallback, useEffect, useMemo, useState } from 'react';
 
 export function useAudio() {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const droneOscRef = useRef<OscillatorNode | null>(null);
   const droneGainRef = useRef<GainNode | null>(null);
   const lfoOscRef = useRef<OscillatorNode | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+
+  const getMaster = useCallback(() => {
+    if (!audioCtxRef.current) return null;
+    if (!masterGainRef.current) {
+      masterGainRef.current = audioCtxRef.current.createGain();
+      masterGainRef.current.connect(audioCtxRef.current.destination);
+    }
+    return masterGainRef.current;
+  }, []);
 
   const initAudio = useCallback(() => {
     if (!audioCtxRef.current) {
@@ -14,32 +25,43 @@ export function useAudio() {
     if (audioCtxRef.current.state === 'suspended') {
       audioCtxRef.current.resume();
     }
+    getMaster();
+  }, [getMaster]);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted(prev => {
+      const next = !prev;
+      if (masterGainRef.current) {
+        masterGainRef.current.gain.value = next ? 0 : 1;
+      }
+      return next;
+    });
   }, []);
+
+  const dest = useCallback(() => getMaster() ?? audioCtxRef.current?.destination ?? null, [getMaster]);
 
   const playDrone = useCallback((isRedLight: boolean) => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
 
     if (!droneOscRef.current) {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(isRedLight ? 65 : 55, ctx.currentTime);
-      
       gain.gain.setValueAtTime(0, ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.5);
-      
       osc.connect(gain);
-      gain.connect(ctx.destination);
-      
+      gain.connect(d);
       osc.start();
       droneOscRef.current = osc;
       droneGainRef.current = gain;
     } else {
       droneOscRef.current.frequency.linearRampToValueAtTime(isRedLight ? 65 : 55, ctx.currentTime + 0.2);
     }
-  }, []);
+  }, [dest]);
 
   const stopDrone = useCallback(() => {
     if (droneOscRef.current && droneGainRef.current && audioCtxRef.current) {
@@ -62,83 +84,74 @@ export function useAudio() {
   const playShot = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
-    
+    const d = dest();
+    if (!d) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    
     osc.type = 'square';
     osc.frequency.setValueAtTime(150, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-    
     gain.gain.setValueAtTime(0.5, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-    
     osc.connect(gain);
-    gain.connect(ctx.destination);
-    
+    gain.connect(d);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.2);
-  }, []);
+  }, [dest]);
 
   const playDollTurn = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
-
+    const d = dest();
+    if (!d) return;
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
-
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(800, ctx.currentTime);
     osc1.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.3);
-
     osc2.type = 'triangle';
     osc2.frequency.setValueAtTime(1200, ctx.currentTime);
     osc2.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.4);
-
     gain.gain.setValueAtTime(0.4, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.1);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-
     osc1.connect(gain);
     osc2.connect(gain);
-    gain.connect(ctx.destination);
-
+    gain.connect(d);
     osc1.start(ctx.currentTime);
     osc1.stop(ctx.currentTime + 0.5);
     osc2.start(ctx.currentTime);
     osc2.stop(ctx.currentTime + 0.5);
-  }, []);
+  }, [dest]);
 
   const playWin = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
-    
+    const d = dest();
+    if (!d) return;
     const frequencies = [440, 554.37, 659.25, 880];
-    
     frequencies.forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      
       osc.type = 'sine';
       osc.frequency.value = freq;
-      
       const startTime = ctx.currentTime + (i * 0.15);
       gain.gain.setValueAtTime(0, startTime);
       gain.gain.linearRampToValueAtTime(0.2, startTime + 0.1);
       gain.gain.linearRampToValueAtTime(0, startTime + 1.5);
-      
       osc.connect(gain);
-      gain.connect(ctx.destination);
-      
+      gain.connect(d);
       osc.start(startTime);
       osc.stop(startTime + 1.5);
     });
-  }, []);
+  }, [dest]);
 
   const playCrack = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     const bufferSize = ctx.sampleRate * 0.15;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -155,13 +168,15 @@ export function useAudio() {
     filter.frequency.value = 2000;
     source.connect(filter);
     filter.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     source.start();
-  }, []);
+  }, [dest]);
 
   const playTugPull = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'triangle';
@@ -170,14 +185,16 @@ export function useAudio() {
     gain.gain.setValueAtTime(0.15, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.1);
-  }, []);
+  }, [dest]);
 
   const playCrowdCheer = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     const bufferSize = ctx.sampleRate * 1.5;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -196,13 +213,15 @@ export function useAudio() {
     filter.Q.value = 0.5;
     source.connect(filter);
     filter.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     source.start();
-  }, []);
+  }, [dest]);
 
   const playMarbleClink = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -211,14 +230,16 @@ export function useAudio() {
     gain.gain.setValueAtTime(0.2, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.15);
-  }, []);
+  }, [dest]);
 
   const playGlassShatter = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     const bufferSize = ctx.sampleRate * 0.5;
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -232,13 +253,15 @@ export function useAudio() {
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(0.35, ctx.currentTime);
     source.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     source.start();
-  }, []);
+  }, [dest]);
 
   const playGlassStep = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -247,14 +270,16 @@ export function useAudio() {
     gain.gain.setValueAtTime(0.1, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.1);
-  }, []);
+  }, [dest]);
 
   const playTensionDrone = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     if (droneOscRef.current) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -271,15 +296,17 @@ export function useAudio() {
     gain.gain.setValueAtTime(0, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 1);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     osc.start();
     droneOscRef.current = osc;
     droneGainRef.current = gain;
-  }, []);
+  }, [dest]);
 
   const playClash = useCallback(() => {
     if (!audioCtxRef.current) return;
     const ctx = audioCtxRef.current;
+    const d = dest();
+    if (!d) return;
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -293,12 +320,12 @@ export function useAudio() {
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
     osc1.connect(gain);
     osc2.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(d);
     osc1.start(ctx.currentTime);
     osc1.stop(ctx.currentTime + 0.2);
     osc2.start(ctx.currentTime);
     osc2.stop(ctx.currentTime + 0.2);
-  }, []);
+  }, [dest]);
 
   useEffect(() => {
     return () => {
@@ -313,9 +340,11 @@ export function useAudio() {
     initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin,
     playCrack, playTugPull, playCrowdCheer, playMarbleClink,
     playGlassShatter, playGlassStep, playTensionDrone, playClash,
+    toggleMute, isMuted,
   }), [
     initAudio, playDrone, stopDrone, playShot, playDollTurn, playWin,
     playCrack, playTugPull, playCrowdCheer, playMarbleClink,
     playGlassShatter, playGlassStep, playTensionDrone, playClash,
+    toggleMute, isMuted,
   ]);
 }

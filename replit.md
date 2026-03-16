@@ -124,6 +124,10 @@ Squid Game-inspired browser game built with React + Vite. Entirely client-side â
   - `src/index.css` â€” Squid Game color theme, glow effects, CRT overlay
 - **Controls**: Vary per game (MOVE/SPACE for R1, pointer drag for R2, PULL/SPACE for R3, buttons for R4-R6)
 - **Background image**: `public/squid-game-bg.png` (user-provided)
+- **i18n**: English/Arabic language support via `src/hooks/use-language.tsx` (LanguageProvider + useLanguage hook). Toggle button on landing screen. Sets `dir`/`lang` on `<html>` for RTL.
+- **Mute**: Master gain node in `use-audio.ts`. Toggle button fixed top-right corner in Home.tsx.
+- **Difficulty**: Increased across all rounds (shorter timers, tighter tolerances, stronger AI opponents)
+- **Layout**: Game panel centered (max-width 520px) with dark grid-patterned background outside
 
 ### `scripts` (`@workspace/scripts`)
 

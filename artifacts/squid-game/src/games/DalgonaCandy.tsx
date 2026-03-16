@@ -105,7 +105,7 @@ export function DalgonaCandy({ onWin, onLose, audio }: Props) {
   const [shape] = useState<Shape>(() => SHAPES[Math.floor(Math.random() * SHAPES.length)]);
   const [traceProgress, setTraceProgress] = useState(0);
   const [crackLevel, setCrackLevel] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(18);
   const [isTracing, setIsTracing] = useState(false);
   const [needlePos, setNeedlePos] = useState({ x: 0, y: 0 });
   const [showResult, setShowResult] = useState<'win' | 'lose' | null>(null);
@@ -178,10 +178,10 @@ export function DalgonaCandy({ onWin, onLose, audio }: Props) {
       const dt = now - lastPosRef.current.time;
       if (dt > 0) {
         const speed = Math.sqrt(dx * dx + dy * dy) / dt;
-        if (speed > 1.5 && isTracing) {
+        if (speed > 1.0 && isTracing) {
           audio.playCrack();
           setCrackLevel(prev => {
-            const next = prev + 5;
+            const next = prev + 6;
             if (next >= 100 && !doneRef.current) {
               doneRef.current = true;
               setTimeout(() => {
@@ -198,7 +198,7 @@ export function DalgonaCandy({ onWin, onLose, audio }: Props) {
     lastPosRef.current = { x: pos.x, y: pos.y, time: now };
 
     const dist = Math.sqrt((pos.x - target.x) ** 2 + (pos.y - target.y) ** 2);
-    const tolerance = 25;
+    const tolerance = 18;
 
     if (dist < tolerance) {
       currentSegmentRef.current++;

@@ -67,7 +67,15 @@ export function Marbles({ onWin, onLose, audio }: Props) {
     if (doneRef.current) return;
     setGuess(g);
     const maxOpp = Math.min(opponentMarbles, 5);
-    const hand = 1 + Math.floor(Math.random() * maxOpp);
+    const cheatRoll = Math.random();
+    let hand: number;
+    if (cheatRoll < 0.6) {
+      const desiredParity = g === 'odd' ? 0 : 1;
+      const candidates = Array.from({ length: maxOpp }, (_, i) => i + 1).filter(n => n % 2 === desiredParity);
+      hand = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : 1 + Math.floor(Math.random() * maxOpp);
+    } else {
+      hand = 1 + Math.floor(Math.random() * maxOpp);
+    }
     setOpponentHand(hand);
     setRoundPhase('REVEAL');
     audio.playMarbleClink();

@@ -8,7 +8,7 @@ interface Props {
 }
 
 const BRIDGE_LENGTH = 18;
-const AI_PLAYERS = 4;
+const AI_PLAYERS = 2;
 
 type PanelState = 'unknown' | 'safe' | 'broken' | 'revealed-safe';
 
@@ -21,7 +21,7 @@ interface BridgeRow {
 export function GlassBridge({ onWin, onLose, audio }: Props) {
   const [bridge, setBridge] = useState<BridgeRow[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(40);
   const [showResult, setShowResult] = useState<'win' | 'lose' | null>(null);
   const [aiPhase, setAiPhase] = useState(true);
   const [aiMessage, setAiMessage] = useState('');

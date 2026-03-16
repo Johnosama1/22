@@ -23,7 +23,7 @@ const SQUID_PATH = "M200,50 L280,120 L280,200 L350,200 L350,280 L280,280 L280,35
 
 export function SquidGameFinal({ onWin, onLose, audio }: Props) {
   const [playerHP, setPlayerHP] = useState(3);
-  const [defenderHP, setDefenderHP] = useState(3);
+  const [defenderHP, setDefenderHP] = useState(4);
   const [playerPos, setPlayerPos] = useState(0);
   const [turnPhase, setTurnPhase] = useState<TurnPhase>('CHOOSE');
   const [turnHistory, setTurnHistory] = useState<TurnResult[]>([]);
@@ -39,7 +39,7 @@ export function SquidGameFinal({ onWin, onLose, audio }: Props) {
     if (turnPhase !== 'CHOOSE') return;
 
     const defActions: DefenderAction[] = ['BLOCK', 'ATTACK', 'REST'];
-    const weights = action === 'ATTACK' ? [0.5, 0.3, 0.2] : action === 'MOVE' ? [0.3, 0.5, 0.2] : [0.2, 0.4, 0.4];
+    const weights = action === 'ATTACK' ? [0.6, 0.25, 0.15] : action === 'MOVE' ? [0.35, 0.45, 0.2] : [0.25, 0.45, 0.3];
     const rand = Math.random();
     let cumulative = 0;
     let defAction: DefenderAction = 'REST';
@@ -133,7 +133,7 @@ export function SquidGameFinal({ onWin, onLose, audio }: Props) {
           <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-lg border border-red-500/30">
             <span className="text-zinc-400 font-mono text-xs uppercase block">Defender</span>
             <div className="flex gap-1 mt-1">
-              {Array.from({ length: 3 }).map((_, i) => (
+              {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className={`w-6 h-6 rounded-full border-2 ${i < defenderHP ? 'bg-red-500 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-zinc-800 border-zinc-700'}`} />
               ))}
             </div>

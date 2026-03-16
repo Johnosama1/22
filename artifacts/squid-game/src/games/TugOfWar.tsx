@@ -9,7 +9,7 @@ interface Props {
 
 const TEAM_SIZE = 10;
 const WIN_THRESHOLD = 100;
-const GAME_TIME = 30;
+const GAME_TIME = 20;
 
 export function TugOfWar({ onWin, onLose, audio }: Props) {
   const [position, setPosition] = useState(0);
@@ -41,8 +41,8 @@ export function TugOfWar({ onWin, onLose, audio }: Props) {
 
       setPosition(prev => {
         if (doneRef.current) return prev;
-        const enemyForce = 1.5 + Math.random() * 2;
-        const teamAIForce = 1.0 + Math.random() * 1.5;
+        const enemyForce = 2.5 + Math.random() * 2;
+        const teamAIForce = 0.5 + Math.random() * 0.5;
         const drift = enemyForce - teamAIForce;
         const next = prev + drift;
         if (next >= WIN_THRESHOLD) {
