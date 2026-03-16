@@ -7,11 +7,13 @@ export function useAudio() {
   const lfoOscRef = useRef<OscillatorNode | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(false);
 
   const getMaster = useCallback(() => {
     if (!audioCtxRef.current) return null;
     if (!masterGainRef.current) {
       masterGainRef.current = audioCtxRef.current.createGain();
+      masterGainRef.current.gain.value = isMutedRef.current ? 0 : 1;
       masterGainRef.current.connect(audioCtxRef.current.destination);
     }
     return masterGainRef.current;
@@ -31,6 +33,7 @@ export function useAudio() {
   const toggleMute = useCallback(() => {
     setIsMuted(prev => {
       const next = !prev;
+      isMutedRef.current = next;
       if (masterGainRef.current) {
         masterGainRef.current.gain.value = next ? 0 : 1;
       }

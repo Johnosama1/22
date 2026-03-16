@@ -65,7 +65,7 @@ export function LandingScreen({ startGame }: { startGame: () => void; returnToMe
           onClick={toggleLang}
           className="mt-2 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-zinc-300 font-mono text-sm hover:bg-white/20 transition-colors"
         >
-          {lang === 'en' ? 'العربية' : 'English'}
+          {lang === 'en' ? 'AR' : 'EN'}
         </button>
       </div>
     </motion.div>
@@ -170,14 +170,10 @@ export function LoseScreen({ startGame, currentRound }: {
   );
 }
 
-const ROUND_PRIZES: Record<number, string> = {
-  1: '₩100 Million',
-  2: '₩500 Million',
-  3: '₩2 Billion',
-  4: '₩10 Billion',
-  5: '₩25 Billion',
-  6: '₩45.6 Billion',
-};
+function usePrize(round: number) {
+  const { t } = useLanguage();
+  return t(`prize.${round}`);
+}
 
 export function WinScreen({ currentRound, onTakeReward, onContinue }: {
   currentRound: number;
@@ -186,6 +182,7 @@ export function WinScreen({ currentRound, onTakeReward, onContinue }: {
   onContinue: () => void;
 }) {
   const { t } = useLanguage();
+  const prize = usePrize(currentRound);
   const isFinalRound = currentRound >= TOTAL_ROUNDS;
   return (
     <motion.div
@@ -203,7 +200,7 @@ export function WinScreen({ currentRound, onTakeReward, onContinue }: {
             {t('win.survived')} {t(`round.${currentRound}`)}!
           </p>
           <p className="text-lg text-yellow-300 font-mono">
-            {t('win.prize')} {ROUND_PRIZES[currentRound]}
+            {t('win.prize')} {prize}
           </p>
         </div>
 
@@ -259,7 +256,7 @@ export function RewardScreen({ currentRound, returnToMenu }: {
         </motion.div>
 
         <h2 className="text-4xl md:text-6xl font-black text-yellow-400 tracking-widest">
-          {ROUND_PRIZES[currentRound]}
+          {t(`prize.${currentRound}`)}
         </h2>
         <p className="text-xl text-zinc-400 font-mono">{t('reward.transferred')}</p>
         <p className="text-sm text-zinc-600 font-mono">{t('reward.leftAfter')} {currentRound}.</p>
