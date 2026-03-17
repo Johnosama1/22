@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface Props {
   onWin: () => void;
   onLose: () => void;
-  audio: { playGlassShatter: () => void; playGlassStep: () => void; playTensionDrone: () => void; stopDrone: () => void; initAudio: () => void };
+  audio: { playGlassShatter: () => void; playGlassStep: () => void; initAudio: () => void };
 }
 
 const BRIDGE_LENGTH = 18;
@@ -92,15 +92,6 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!aiPhase && !doneRef.current) {
-      audio.playTensionDrone();
-    }
-    return () => {
-      if (!aiPhase) audio.stopDrone();
-    };
-  }, [aiPhase, audio]);
-
-  useEffect(() => {
     if (aiPhase || doneRef.current) return;
     const timer = setInterval(() => {
       setTimeLeft(t => {
@@ -135,7 +126,6 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
       setCurrentStep(nextStep);
       if (nextStep >= BRIDGE_LENGTH) {
         doneRef.current = true;
-        audio.stopDrone();
         setShowResult('win');
         setTimeout(onWin, 1500);
       }
@@ -144,7 +134,6 @@ export function GlassBridge({ onWin, onLose, audio }: Props) {
       else newBridge[currentStep] = { ...row, rightState: 'broken' };
       setBridge(newBridge);
       audio.playGlassShatter();
-      audio.stopDrone();
       doneRef.current = true;
       setShowResult('lose');
       setTimeout(onLose, 1500);

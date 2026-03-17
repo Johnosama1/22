@@ -23,6 +23,16 @@ export function Marbles({ onWin, onLose, audio }: Props) {
   const [roundResult, setRoundResult] = useState<string>('');
   const [showFinal, setShowFinal] = useState<'win' | 'lose' | null>(null);
   const doneRef = useRef(false);
+  const playerMarblesRef = useRef(10);
+  const opponentMarblesRef = useRef(10);
+
+  useEffect(() => {
+    playerMarblesRef.current = playerMarbles;
+  }, [playerMarbles]);
+
+  useEffect(() => {
+    opponentMarblesRef.current = opponentMarbles;
+  }, [opponentMarbles]);
 
   useEffect(() => {
     if (doneRef.current) return;
@@ -31,7 +41,7 @@ export function Marbles({ onWin, onLose, audio }: Props) {
         if (t <= 0.1 && !doneRef.current) {
           doneRef.current = true;
           setTimeout(() => {
-            if (playerMarbles >= opponentMarbles) {
+            if (playerMarblesRef.current >= opponentMarblesRef.current) {
               setShowFinal('win');
               setTimeout(onWin, 1500);
             } else {
@@ -45,7 +55,7 @@ export function Marbles({ onWin, onLose, audio }: Props) {
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onWin, onLose, playerMarbles, opponentMarbles]);
+  }, [onWin, onLose]);
 
   const checkGameEnd = useCallback((pMarbles: number, oMarbles: number) => {
     if (pMarbles <= 0) {

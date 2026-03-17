@@ -18,6 +18,11 @@ export function TugOfWar({ onWin, onLose, audio }: Props) {
   const [showResult, setShowResult] = useState<'win' | 'lose' | null>(null);
   const doneRef = useRef(false);
   const lastPullRef = useRef(0);
+  const positionRef = useRef(0);
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   useEffect(() => {
     if (doneRef.current) return;
@@ -26,7 +31,7 @@ export function TugOfWar({ onWin, onLose, audio }: Props) {
         if (t <= 0.1 && !doneRef.current) {
           doneRef.current = true;
           setTimeout(() => {
-            if (position <= 0) {
+            if (positionRef.current <= 0) {
               setShowResult('win');
               setTimeout(onWin, 1500);
             } else {
@@ -65,7 +70,7 @@ export function TugOfWar({ onWin, onLose, audio }: Props) {
       });
     }, 100);
     return () => clearInterval(timer);
-  }, [onWin, onLose, position]);
+  }, [onWin, onLose]);
 
   const handlePull = useCallback(() => {
     if (doneRef.current) return;
